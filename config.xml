@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<widget xmlns   = "http://www.w3.org/ns/widgets"
+        xmlns:gap   = "http://phonegap.com/ns/1.0"
+        id          = "ng.com.kizer.raspump.app"
+        versionCode = "1"
+        android-versionCode="1"
+        version     = "0.0.1" >
+
+    <!-- versionCode is optional and Android only -->
+
+    <name>Raspump</name>
+
+    <description>
+        Raspberry pi-controlled boost pump, phone software
+    </description>
+
+    <author href="https://github.com/xkizer" email="kizer@kizer.com.ng">
+        Kizer Chuks
+    </author>
+
+    <platform name="android" />
+    <content src="src/index.html"></content>
+    <access origin="*"></access>
+
+</widget>
