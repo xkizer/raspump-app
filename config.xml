@@ -19,7 +19,7 @@
     </author>
 
     <platform name="android" />
-    <content src="src/index.html"></content>
+    <content src="index.html"></content>
     <access origin="*"></access>
 
 </widget>
