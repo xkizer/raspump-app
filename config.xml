@@ -19,7 +19,8 @@
     </author>
 
     <platform name="android" />
-    <content src="index.html"></content>
-    <access origin="*"></access>
+    <content src="index.html" />
+    <access origin="*" />
+    <allow-navigation href="*" />
 
 </widget>
