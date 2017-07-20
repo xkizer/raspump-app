@@ -7,7 +7,7 @@ const config = {
         "port": 32000
     },
     "remote": {
-        "host": "192.168.8.103",
+        "host": "178.62.107.6",
         "port": 39000
     },
     "auth": {
@@ -29,17 +29,6 @@ const remoteUrl = `http://${remoteConfig.host}:${remoteConfig.port}`;
 let remoteSocket: SocketClient;
 let localSocket: SocketClient;
 
-// Connect to both local and remote at the same time
-socket.connect(localUrl)
-    .then(socket => localSocket = socket)
-    .then(commonSetup)
-    .then(localSetup);
-
-socket.connect(remoteUrl)
-    .then(socket => remoteSocket = socket)
-    .then(commonSetup)
-    .then(remoteSetup);
-
 let pumpBtn;
 let statusDsp;
 let pumpStatus;
@@ -54,8 +43,10 @@ function statusListener(status) {
     pumpBtn[0].disabled = false;
     pumpStatus = status.status;
 
+    console.log('pumpBtn', pumpBtn);
+
     if (status.status) {
-        console.log('SWITCHING...');
+        console.log('SWITCHING ON...');
         pumpBtn.text('Switch Off').addClass('on').removeClass('off');
         statusDsp.text('On').addClass('on').removeClass('off');
     } else {
@@ -65,15 +56,25 @@ function statusListener(status) {
     }
 }
 
+// Connect to both local and remote at the same time
+socket.connect(localUrl)
+    .then(socket => localSocket = socket)
+    .then(commonSetup)
+    .then(localSetup)
+    .then(() => console.info('CONNECTED TO LOCAL'))
+    .catch(e => console.error('FAILED TO CONNECT TO LOCAL', e));
+
+socket.connect(remoteUrl)
+    .then(socket => remoteSocket = socket)
+    .then(commonSetup)
+    .then(remoteSetup)
+    .then(() => console.info('CONNECTED TO REMOTE'))
+    .catch(e => console.error('FAILED TO CONNECT TO REMOTE', e));
+
 function commonSetup(socket: SocketClient) {
     // Login first
     return socket.login(authInfo.user, authInfo.password)
         .then(() => getInitialStatus(socket))
-        .then(() => {
-            pumpBtn.click(() => {
-                socket.setStatus(deviceId, !pumpStatus);
-            });
-        })
         .then(() => socket) // Return the socket for chaining
         .catch((e) => {
             // Unable to authenticate, abort
@@ -83,49 +84,74 @@ function commonSetup(socket: SocketClient) {
 }
 
 function localSetup(socket: SocketClient) {
-    // Disconnect the remote server
-    remoteSocket && remoteSocket.disconnect();
-    socket.subscribe(deviceId, statusListener);
+    console.log('SETTING UP LOCAL SERVER');
+
+    const setStatus = (...args) => {
+        socket.setStatus(deviceId, !pumpStatus);
+    };
+
+    const onConnected = () => {
+        pumpBtn.on('click', setStatus);
+
+        // Is local connected?
+        console.log('ABOUT TO DISCONNECT REMOTE', remoteSocket);
+        remoteSocket && remoteSocket.disconnect();
+        socket.subscribe(deviceId, statusListener);
+    };
 
     const onReconnect = () => {
+        console.log('LOCAL RECONNECTED');
         // Set up the socket again
         commonSetup(socket)
-            .then(() => {
-                // When we reconnect, disable remote
-                remoteSocket && remoteSocket.disconnect();
-                socket.subscribe(deviceId, statusListener);
-            });
+            .then(onConnected);
     };
 
     const onDisconnect = () => {
+        console.log('LOCAL DISCONNECTED');
         // When we disconnect, try to reconnect the remote
+        console.log('REMOTE===>', remoteSocket);
         remoteSocket && remoteSocket.reconnect();
         socket.unsubscribe(deviceId, statusListener);
+        pumpBtn.off('click', setStatus);
     };
 
     socket.onDisconnect = onDisconnect;
     socket.onReconnect = onReconnect;
+    onConnected();
 }
 
 function remoteSetup(socket: SocketClient) {
-    socket.subscribe(deviceId, statusListener);
-    const pushButtonListerner = status => socket.setStatus(deviceId, status);
+    console.log('SETTING UP REMOTE SERVER');
+
+    const setStatus = (...args) => {
+        socket.setStatus(deviceId, !pumpStatus);
+    };
+
+    const onConnected = () => {
+        pumpBtn.on('click', setStatus);
+
+        // Is local connected?
+        localSocket && localSocket.socket.connected && socket.disconnect();
+        socket.subscribe(deviceId, statusListener);
+    };
 
     const onReconnect = () => {
+        console.log('REMOTE RECONNECTED');
         // Set up the socket again
         commonSetup(socket)
-            .then(() => {
-                socket.subscribe(deviceId, statusListener);
-            });
+            .then(() => onConnected);
     };
 
     const onDisconnect = () => {
+        console.log('REMOTE DISCONNECTED');
         // Unsibscribe
         socket.unsubscribe(deviceId, statusListener);
+        pumpBtn.off('click', setStatus);
     };
 
     socket.onDisconnect = onDisconnect;
     socket.onReconnect = onReconnect;
+    onConnected();
 }
 
 function getInitialStatus(socket) {

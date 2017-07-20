@@ -3,10 +3,16 @@ var socket = {
         return new Promise(function (res, rej) {
             // Attempt connection
             var client = io(url);
+            console.log('CONNECTING...', url);
             client.once('connect', function () {
+                console.log('CONNECTED...', url);
                 res(new SocketClient(client));
             });
             client.on('connect_error', function (e) {
+                console.log('CONNECT ERROR', e);
+            });
+            client.once('reconnect_failed', function (e) {
+                console.log('RECONNECTION FAILED', e);
                 rej(e);
             });
         });
@@ -84,6 +90,7 @@ var SocketClient = (function () {
     };
     SocketClient.prototype.reconnect = function () {
         var _this = this;
+        console.log('RECONNECTING TO SERVER', this.socket.connected);
         if (this.socket.connected) {
             // Socket already connected
             return;
@@ -93,6 +100,7 @@ var SocketClient = (function () {
                 _this.onReconnect();
             }
         });
+        this.socket.connect();
     };
     SocketClient.prototype.requireLogin = function () {
         if (!this.user) {
