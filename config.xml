@@ -22,5 +22,7 @@
     <content src="index.html" />
     <access origin="*" />
     <allow-navigation href="*" />
+    <allow-intent href="*" />
+
 
 </widget>
