@@ -1,0 +1,77 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", "Helvetica", "Arial", "Lucida Grande", sans-serif;
+}
+
+#header {
+    position: fixed;
+    top: 0;
+    height: 80px;
+    left: 0;
+    right: 0;
+    background: #824622;
+    color: #fff;
+    text-align: center;
+    box-shadow: 0px 0px 11px 0px rgba(0, 0, 0, 0.8);
+}
+
+#footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background: #fa8542;
+    box-shadow: 0px 0px 11px 0px rgba(0, 0, 0, 0.8);
+    z-index: 12;
+    padding: 9px 12px;
+    color: #fff;
+    text-align: center;
+}
+
+#container {
+    padding-top: 90px;
+}
+
+#pump-status {
+    display: block;
+    margin: 20px auto;
+    width: 80%;
+    height: 50px;
+    background: grey;
+    text-align: center;
+    color: #ffffff;
+    font-size: 30px;
+    line-height: 50px;
+}
+
+#pump-status.on {
+    background: #00A000;
+}
+
+#pump-status.off {
+    background: #A00000;
+}
+
+#pump-button {
+    border: none;
+    display: block;
+    margin: 20px auto;
+    width: 80%;
+    height: 50px;
+    background: #8a6d3b;
+    text-align: center;
+    color: #ffffff;
+    font-size: 30px;
+    line-height: 50px;
+}
+
+#pump-button:disabled {
+    background-color: rgba(138, 109, 59, 0.42);
+    color: #ccc;
+    text-shadow: 1px 1px #999;
+}
